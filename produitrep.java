@@ -1,13 +1,10 @@
-package com.example.demo;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+package repository;
 
-@SpringBootApplication
-public class ProjetApplication {
+import org.springframework.data.jpa.repository.JpaRepository;
 
-	public static void main(String[] args) {
-		SpringApplication.run(ProjetApplication.class, args);
-	}
+import models.produit;
+
+public interface produitrep extends JpaRepository<produit, Long> {
 
 }
