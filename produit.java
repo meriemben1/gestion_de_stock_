@@ -1,46 +1,91 @@
-package controler;
+package models;
 
-import java.sql.Date;
 import java.util.List;
+import java.util.Set;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import models.commande;
-import models.fournisseur;
-import service.commandeser;
-
-@RestController
-@RequestMapping("/api/commande")
-@CrossOrigin(origins="http://localhost:4200")
-public class commandecont {
-	commandeser com;
-	@GetMapping("/all")
-	public List<commande>getAll(){
-		return com.getAllCommande()	;
-		}
-	@GetMapping("/get/{id}")
-	public commande getCommande(@PathVariable long id) {
-		return com.getCommande(id);
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+// creation mta3 table de BD
+@Entity 
+public class produit {
+	// ki yebde andek clé prim
+	@Id 
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private long id;
+	private String name;
+	private String desc;
+	private double prix;
+	@ManyToOne
+	@JoinColumn(name = "cmd_id")
+	private commande commande;
+	@OneToMany(mappedBy = "Produit", cascade = CascadeType.ALL)
+    private List <stock> stocks;
+    @ManyToOne
+    @JoinColumn(name = "fournisseur_id")
+    private fournisseur fournisseurs;
+	public long getId() {
+		return id;
 	}
-	@DeleteMapping("/delete/{id}")
-	public void deleteCommande(@PathVariable long id) {
-		com.deleteCommande(id);
+	public void setId(long id) {
+		this.id = id;
 	}
-	@PostMapping("/create")
-	public void addCommande(@RequestBody int qnt,Date date,String statut) {
-		com.addCommande(qnt,date,statut);
+	public String getName() {
+		return name;
 	}
-	@PutMapping("/update")
-	public void editCommande(@RequestBody Long id,int qnt,Date date,String statut) {
-		com.editCommande(id,qnt,date,statut);
+	public void setName(String name) {
+		this.name = name;
 	}
-
+	public String getDesc() {
+		return desc;
+	}
+	public void setDesc(String desc) {
+		this.desc = desc;
+	}
+	public double getPrix() {
+		return prix;
+	}
+	public void setPrix(double prix) {
+		this.prix = prix;
+	}
+	public commande getCommande() {
+		return commande;
+	}
+	public void setCommande(commande commande) {
+		this.commande = commande;
+	}
+	public List<stock> getStocks() {
+		return stocks;
+	}
+	public void setStocks(List<stock> stocks) {
+		this.stocks = stocks;
+	}
+	public fournisseur getFournisseurs() {
+		return fournisseurs;
+	}
+	public void setFournisseurs(fournisseur fournisseurs) {
+		this.fournisseurs = fournisseurs;
+	}
+	public produit(long id, String name, String desc, double prix, models.commande commande, List<stock> stocks,
+			fournisseur fournisseurs) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.desc = desc;
+		this.prix = prix;
+		this.commande = commande;
+		this.stocks = stocks;
+		this.fournisseurs = fournisseurs;
+	}
+	public produit() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	
 }
