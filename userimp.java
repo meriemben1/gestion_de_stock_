@@ -5,56 +5,53 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
-import models.stock;
 import models.user;
-import repository.stockrep;
-import service.stockser;
+import repository.userrep;
+import service.userser;
 
 @Service
 @Transactional
-public class stockimp implements stockser {
-stockrep stockrepo;
+public class userimp implements userser {
+ userrep userrepo;
 	@Override
-	public void addstock(int qnt, int s_min, int s_max, long produit) {
-		stock s= new stock();
-		s.setQnt(qnt);
-		s.setS_min(s_min);
-		s.setS_max(s_max);
-		stockrepo.save(s);
+	public void addUser(String mdp, String role) {
+		user u= new user();
+		u.setMdp(mdp);
+		u.setRole(role);
+		userrepo.save(u);
 		
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void editstock(long id, int qnt, int s_min, int s_max , long produit) {
-		stock s=stockrepo.findById(id).get();
-		s.setQnt(qnt);
-		s.setS_min(s_min);
-		s.setS_max(s_max);
-		stockrepo.save(s);
-		
+	public void editUser(long id, String mdp, String role) {
+		user u=userrepo.findById(id).get();
+		u.setMdp(mdp);
+		u.setRole(role);
+		userrepo.save(u);
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void deleteStock(long id) {
-		stockrepo.deleteById(id);
+	public void deleteUser(long id) {
+		userrepo.deleteById(id);
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public stock getStock(long id) {
+	public user getUser(long id) {
 		// TODO Auto-generated method stub
-		return stockrepo.findById(id).get();
+		return userrepo.findById(id).get();
 	}
 
 	@Override
-	public List<stock> getAllStock() {
+	public List<user> getAllUser() {
 		// TODO Auto-generated method stub
-		return stockrepo.findAll();
+		return userrepo.findAll();
 	}
+	
 
 }
