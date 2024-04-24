@@ -1,63 +1,75 @@
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+// Online Java Compiler
+// Use this editor to write, compile and run your Java code online
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.sql.Date;
-import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import models.commande;
-import models.produit;
+import repository.commanderep;
+import service.commandeimp;
+//La classe commandeimpTest est déclarée et annotée avec @DataJpaTest pour indiquer à Spring Boot de configurer un environnement de test de base de données en mémoire pour cette classe.
+@DataJpaTest
+public class commandeimpTest {
 
-public class CommandeTest {
+    @Autowired
+    private commanderep commandeRepo;
 
-    @Mock
-    private List<produit> produitsMock;
-
-    @InjectMocks
-    private commande commandeEntity;
-
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.initMocks(this); // Initialiser les mocks avant chaque test
+    private commandeimp commandeService;
+//@Before : Cette annotation indique que la méthode setup doit être exécutée avant chaque test.
+    @Before
+    public void setup() {
+        commandeService = new commandeimp(commandeRepo);
     }
 
     @Test
-    public void testGettersAndSetters() {
-        long id = 1L;
+    public void testAddCommande() {
+       
         int qnt = 5;
         Date date = new Date(System.currentTimeMillis());
         String statut = "En cours";
 
-        commandeEntity.setId(id);
-        commandeEntity.setQnt(qnt);
-        commandeEntity.setDate(date);
-        commandeEntity.setStatut(statut);
+       
+        commandeService.addCommande(qnt, date, statut);
 
-        assertEquals(id, commandeEntity.getId());
-        assertEquals(qnt, commandeEntity.getQnt());
-        assertEquals(date, commandeEntity.getDate());
-        assertEquals(statut, commandeEntity.getStatut());
+
+        List<commande> commandes = commandeRepo.findAll();
+        assertEquals(1, commandes.size());
+        commande c = commandes.get(0);
+        assertEquals(qnt, c.getQnt());
+        assertEquals(date, c.getDate());
+        assertEquals(statut, c.getStatut());
     }
 
     @Test
-    public void testProduitsList() {
-        produit produit1 = new produit();
-        produit produit2 = new produit();
+    public void testEditCommande() {
+        
+        int qnt = 10;
+        Date date = new Date(System.currentTimeMillis());
+        String statut = "Termine";
+        commande c = new commande();
+        c.setQnt(5);
+        c.setDate(new Date(System.currentTimeMillis()));
+        c.setStatut("En cours");
+        commandeRepo.save(c);
 
-        produitsMock = new ArrayList<>();
-        produitsMock.add(produit1);
-        produitsMock.add(produit2);
+        
+        commandeService.editCommande(c.getId(), qnt, date, statut);
 
-        commandeEntity.setProduits(produitsMock);
-
-        assertEquals(2, commandeEntity.getProduits().size());
-        assertTrue(commandeEntity.getProduits().contains(produit1));
-        assertTrue(commandeEntity.getProduits().contains(produit2));
+        
+        commande editedCommande = commandeRepo.findById(c.getId()).orElse(null);
+        assertNotNull(editedCommande);
+        assertEquals(qnt, editedCommande.getQnt());
+        assertEquals(date, editedCommande.getDate());
+        assertEquals(statut, editedCommande.getStatut());
     }
+
+    
 }
