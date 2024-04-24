@@ -1,65 +1,72 @@
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import models.fournisseur;
-import models.produit;
+import repository.fournissuerrep;
+import service.fournisseurimp;
 
-public class FournisseurTest {
+@DataJpaTest
+public class fournisseurimpTest {
 
-    @Mock
-    private List<produit> produitsMock;
+    @Autowired
+    private fournissuerrep fournisseurRepo;
 
-    @InjectMocks
-    private fournisseur fournisseurEntity;
+    private fournisseurimp fournisseurService;
 
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.initMocks(this); // Initialiser les mocks avant chaque test
+    @Before
+    public void setup() {
+        fournisseurService = new fournisseurimp(fournisseurRepo);
     }
 
     @Test
-    public void testGettersAndSetters() {
-        long id = 1L;
-        String nom = "Fournisseur Test";
-        String adresse = "Adresse test";
+    public void testAddFournisseur() {
+        String nom = "FournisseurTest";
+        String adresse = "123 Rue du Test";
         int tel = 123456789;
-        String email = "test@test.com";
+        String email = "test@example.com";
 
-        fournisseurEntity.setId(id);
-        fournisseurEntity.setNom(nom);
-        fournisseurEntity.setAdresse(adresse);
-        fournisseurEntity.setTel(tel);
-        fournisseurEntity.setEmail(email);
+        fournisseurService.addFournisseur(nom, adresse, tel, email);
 
-        assertEquals(id, fournisseurEntity.getId());
-        assertEquals(nom, fournisseurEntity.getNom());
-        assertEquals(adresse, fournisseurEntity.getAdresse());
-        assertEquals(tel, fournisseurEntity.getTel());
-        assertEquals(email, fournisseurEntity.getEmail());
+        // Récupération du fournisseur depuis la base de données
+        fournisseur f = fournisseurRepo.findByNom(nom);
+        assertNotNull(f);
+        assertEquals(nom, f.getNom());
+        assertEquals(adresse, f.getAdresse());
+        assertEquals(tel, f.getTel());
+        assertEquals(email, f.getEmail());
     }
 
     @Test
-    public void testProduitsList() {
-        produit produit1 = new produit();
-        produit produit2 = new produit();
+    public void testEditFournisseur() {
+        String nom = "FournisseurTest";
+        String adresse = "123 Rue du Test";
+        int tel = 123456789;
+        String email = "test@example.com";
 
-        produitsMock = new ArrayList<>();
-        produitsMock.add(produit1);
-        produitsMock.add(produit2);
+        fournisseurService.addFournisseur(nom, adresse, tel, email);
+        fournisseur f = fournisseurRepo.findByNom(nom);
 
-        fournisseurEntity.setProduits(produitsMock);
+        String newNom = "NouveauFournisseur";
+        String newAdresse = "456 Rue du Nouveau";
+        int newTel = 987654321;
+        String newEmail = "nouveau@test.com";
 
-        assertEquals(2, fournisseurEntity.getProduits().size());
-        assertTrue(fournisseurEntity.getProduits().contains(produit1));
-        assertTrue(fournisseurEntity.getProduits().contains(produit2));
+        fournisseurService.editFournisseur(f.getId(), newNom, newAdresse, newTel, newEmail);
+
+        // Récupération du fournisseur modifié depuis la base de données
+        fournisseur editedFournisseur = fournisseurRepo.findById(f.getId()).orElse(null);
+        assertNotNull(editedFournisseur);
+        assertEquals(newNom, editedFournisseur.getNom());
+        assertEquals(newAdresse, editedFournisseur.getAdresse());
+        assertEquals(newTel, editedFournisseur.getTel());
+        assertEquals(newEmail, editedFournisseur.getEmail());
     }
+
+    // Les autres tests (deleteFournisseur, getFournisseur, getAllFournisseur) peuvent être écrits de manière similaire
 }
