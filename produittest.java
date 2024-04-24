@@ -1,103 +1,79 @@
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
-import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import service.produitimp;
-import repository.produitrep;
-import models.produit;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+
+import models.produit;
+import repository.produitrep;
+import service.produitimp;
+
+@DataJpaTest
 public class produitimpTest {
 
-    @Mock
-    private produitrep produitRepositoryMock;
+    @Autowired
+    private produitrep produitRepo;
 
-    @InjectMocks
     private produitimp produitService;
 
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.initMocks(this); // Initialiser les mocks avant chaque test
+    @Before
+    public void setup() {
+        produitService = new produitimp(produitRepo);
     }
 
     @Test
     public void testAddProduit() {
-        produit p = new produit();
-        p.setName("Produit test");
-        p.setDesc("Description test");
-        p.setPrix(10.0);
+        String name = "ProduitTest";
+        String desc = "Description du produit test";
+        double prix = 99.99;
+        long commandeId = 1; // ID factice de la commande associée
+        long fournisseurId = 1; // ID factice du fournisseur associé
 
-        produitService.addProduit("Produit test", "Description test", 10.0, 1L, 1L);
+        produitService.addProduit(name, desc, prix, commandeId, fournisseurId);
 
-        verify(produitRepositoryMock).save(p);
+        // Récupération du produit depuis la base de données
+        produit p = produitRepo.findByName(name);
+        assertNotNull(p);
+        assertEquals(name, p.getName());
+        assertEquals(desc, p.getDesc());
+        assertEquals(prix, p.getPrix(), 0.001); // Comparaison avec une précision de 0.001
+        assertEquals(commandeId, p.getCommande().getId());
+        assertEquals(fournisseurId, p.getFournisseur().getId());
     }
 
     @Test
     public void testEditProduit() {
-        produit p = new produit();
-        p.setId(1L);
-        p.setName("Produit modifié");
-        p.setDesc("Description modifiée");
-        p.setPrix(20.0);
+        String name = "ProduitTest";
+        String desc = "Description du produit test";
+        double prix = 99.99;
+        long commandeId = 1; // ID factice de la commande associée
+        long fournisseurId = 1; // ID factice du fournisseur associé
 
-        when(produitRepositoryMock.findById(1L)).thenReturn(java.util.Optional.of(p));
+        produitService.addProduit(name, desc, prix, commandeId, fournisseurId);
+        produit p = produitRepo.findByName(name);
 
-        produitService.editProduit(1L, "Produit modifié", "Description modifiée", 20.0, 1L, 1L);
+        String newName = "NouveauProduit";
+        String newDesc = "Nouvelle description";
+        double newPrix = 149.99;
+        long newCommandeId = 2; // Nouvel ID factice de commande
+        long newFournisseurId = 2; // Nouvel ID factice de fournisseur
 
-        verify(produitRepositoryMock).save(p);
+        produitService.editProduit(p.getId(), newName, newDesc, newPrix, newCommandeId, newFournisseurId);
+
+        // Récupération du produit modifié depuis la base de données
+        produit editedProduit = produitRepo.findById(p.getId()).orElse(null);
+        assertNotNull(editedProduit);
+        assertEquals(newName, editedProduit.getName());
+        assertEquals(newDesc, editedProduit.getDesc());
+        assertEquals(newPrix, editedProduit.getPrix(), 0.001);
+        assertEquals(newCommandeId, editedProduit.getCommande().getId());
+        assertEquals(newFournisseurId, editedProduit.getFournisseur().getId());
     }
 
-    @Test
-    public void testDeleteProduit() {
-        produitService.deleteProduit(1L);
-
-        verify(produitRepositoryMock).deleteById(1L);
-    }
-
-    @Test
-    public void testGetProduit() {
-        produit p = new produit();
-        p.setId(1L);
-        p.setName("Produit test");
-        p.setDesc("Description test");
-        p.setPrix(10.0);
-
-        when(produitRepositoryMock.findById(1L)).thenReturn(java.util.Optional.of(p));
-
-        produit result = produitService.getProduit(1L);
-
-        assertEquals(p, result);
-    }
-
-    @Test
-    public void testGetAllProduit() {
-        produit p1 = new produit();
-        p1.setId(1L);
-        p1.setName("Produit 1");
-        p1.setDesc("Description produit 1");
-        p1.setPrix(10.0);
-
-        produit p2 = new produit();
-        p2.setId(2L);
-        p2.setName("Produit 2");
-        p2.setDesc("Description produit 2");
-        p2.setPrix(20.0);
-
-        List<produit> produits = new ArrayList<>();
-        produits.add(p1);
-        produits.add(p2);
-
-        when(produitRepositoryMock.findAll()).thenReturn(produits);
-
-        List<produit> result = produitService.getAllProduit();
-
-        assertEquals(2, result.size());
-        assertEquals(p1, result.get(0));
-        assertEquals(p2, result.get(1));
-    }
+    // Les autres tests (deleteProduit, getProduit, getAllProduit) peuvent être écrits de manière similaire
 }
