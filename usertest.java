@@ -1,36 +1,66 @@
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import models.user;
+import repository.userrep;
+import service.userimp;
 
-public class UserTest {
+@DataJpaTest
+public class userimpTest {
 
-    @InjectMocks
-    private user userEntity;
+    @Autowired
+    private userrep userRepo;
 
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.initMocks(this); // Initialiser les mocks avant chaque test
+    private userimp userService;
+
+    @Before
+    public void setup() {
+        userService = new userimp(userRepo);
     }
 
     @Test
-    public void testGettersAndSetters() {
-        long id = 1L;
-        String mdp = "password";
-        String role = "admin";
+    public void testAddUser() {
+        String mdp = "password123";
+        String role = "ROLE_USER";
 
-        userEntity.setId(id);
-        userEntity.setMdp(mdp);
-        userEntity.setRole(role);
+        userService.addUser(mdp, role);
 
-        assertEquals(id, userEntity.getId());
-        assertEquals(mdp, userEntity.getMdp());
-        assertEquals(role, userEntity.getRole());
+        // Récupération de l'utilisateur depuis la base de données
+        List<user> users = userRepo.findAll();
+        assertNotNull(users);
+        assertEquals(1, users.size());
+        user u = users.get(0);
+        assertEquals(mdp, u.getMdp());
+        assertEquals(role, u.getRole());
     }
+
+    @Test
+    public void testEditUser() {
+        String mdp = "password123";
+        String role = "ROLE_USER";
+
+        userService.addUser(mdp, role);
+        List<user> users = userRepo.findAll();
+        user u = users.get(0);
+
+        String newMdp = "newpassword456";
+        String newRole = "ROLE_ADMIN";
+
+        userService.editUser(u.getId(), newMdp, newRole);
+
+        // Récupération de l'utilisateur modifié depuis la base de données
+        user editedUser = userRepo.findById(u.getId()).orElse(null);
+        assertNotNull(editedUser);
+        assertEquals(newMdp, editedUser.getMdp());
+        assertEquals(newRole, editedUser.getRole());
+    }
+
+    // Les autres tests (deleteUser, getUser, getAllUser) peuvent être écrits de manière similaire
 }
